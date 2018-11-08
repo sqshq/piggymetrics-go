@@ -13,7 +13,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func Create(str *store.Store, u *User) *User {
+func Create(str *store.Store, u *User) (*User, error) {
 
 	err := str.Db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(store.UserBucket))
@@ -26,22 +26,22 @@ func Create(str *store.Store, u *User) *User {
 		// hash given password
 		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 		if err != nil {
-			return errors.New("Failed to generate hash for user: " + u.Username) // TODO return err
+			return errors.New("Failed to generate hash for user: " + u.Username)
 		}
 
 		// save
 		if e := b.Put([]byte(u.Username), hash); e != nil {
-			return errors.New("Failed to save user in the store: " + u.Username) // TODO return err
+			return errors.New("Failed to save user in the store: " + u.Username)
 		}
 
 		return err
 	})
 
 	if err != nil {
-		log.Error("Error during account creation: ", err) // TODO return err
+		return nil, err
 	}
 
-	return u
+	return u, nil
 }
 
 func Authenticate(str *store.Store, u *User) bool {

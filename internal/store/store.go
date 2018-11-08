@@ -34,7 +34,7 @@ func New(c *config.Configuration) *Store {
 	})
 
 	if err != nil {
-		panic("failed to create top level buckets)")
+		panic("Failed to create top level buckets)")
 	}
 
 	return &Store{configuration: c, Db: db}

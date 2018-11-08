@@ -3,7 +3,6 @@ package account
 import (
 	"encoding/json"
 	"errors"
-	"github.com/labstack/gommon/log"
 	"github.com/sqshq/piggymetrics/internal/model/user"
 	"github.com/sqshq/piggymetrics/internal/store"
 	"go.etcd.io/bbolt"
@@ -53,7 +52,7 @@ const (
 	HOUR    TimePeriod = "HOUR"
 )
 
-func Create(str *store.Store, u *user.User) *Account {
+func Create(str *store.Store, u *user.User) (*Account, error) {
 
 	svg := Saving{Amount: 0, Currency: USD, Interest: 0, Deposit: false, Capitalization: false}
 	acc := Account{Name: u.Username, LastSeen: time.Now(), Saving: svg}
@@ -63,7 +62,7 @@ func Create(str *store.Store, u *user.User) *Account {
 
 		// check for duplicates
 		if b.Get([]byte(acc.Name)) != nil {
-			return errors.New("Account already exists: " + acc.Name) // TODO return err
+			return errors.New("Account already exists: " + acc.Name)
 		}
 
 		// serialize
@@ -74,17 +73,17 @@ func Create(str *store.Store, u *user.User) *Account {
 
 		// save
 		if e := b.Put([]byte(acc.Name), encoded); e != nil {
-			return errors.New("Failed to save account in the store: " + acc.Name) // TODO return err
+			return errors.New("Failed to save account in the store: " + acc.Name)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		log.Error("Error during account creation: ", err) // TODO return err
+		return nil, err
 	}
 
-	return &acc
+	return &acc, nil
 }
 
 func Update(str *store.Store, acc *Account) error {
