@@ -110,20 +110,28 @@ func Update(str *store.Store, acc *Account) error {
 	return err
 }
 
-func FindByName(str *store.Store, name string) *Account {
+func FindByName(str *store.Store, name string) (*Account, error) {
 
 	acc := new(Account)
 
-	str.Db.View(func(tx *bbolt.Tx) error {
+	err := str.Db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(store.AccountBucket))
 		encoded := b.Get([]byte(name))
 
+		if encoded == nil {
+			return errors.New("Can't find an account by name: " + name)
+		}
+
 		if err := json.Unmarshal(encoded, &acc); err != nil {
-			return errors.New("Can't find account by name: " + name)
+			return errors.New("Can't deserialize an account by name: " + name)
 		}
 
 		return nil
 	})
 
-	return acc
+	if err != nil {
+		return nil, err
+	}
+
+	return acc, nil
 }

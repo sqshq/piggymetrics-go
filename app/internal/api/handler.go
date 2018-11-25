@@ -25,15 +25,15 @@ func (a *Api) CreateNewAccount(c echo.Context) error {
 
 	_, err := user.Create(a.Store, u)
 	if err != nil {
-		log.Error("Failed to create a user ", err)
-		return c.JSON(http.StatusInternalServerError, "Failed to create a user, please try again later")
+		log.Error("Failed to create a user: ", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	acc, err := account.Create(a.Store, u)
 
 	if err != nil {
-		log.Error("Failed to create an account ", err)
-		return c.JSON(http.StatusInternalServerError, "Failed to create an account, please try again later")
+		log.Error("Failed to create an account: ", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, acc)
@@ -46,7 +46,12 @@ func (a *Api) GetCurrentAccount(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, "Token expired")
 	}
 
-	acc := account.FindByName(a.Store, token.username)
+	acc, err := account.FindByName(a.Store, token.username)
+	if err != nil {
+		log.Warn("Failed to load an account: ", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
 	return c.JSON(http.StatusOK, acc)
 }
 
@@ -76,7 +81,8 @@ func (a *Api) CreateToken(c echo.Context) error {
 
 	u := new(user.User)
 	if err := c.Bind(u); err != nil {
-		return c.JSON(http.StatusBadRequest, "Can't deserialize a user")
+		log.Error("Failed to deserialize a user: ", err)
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	authenticated := user.Authenticate(a.Store, u)
@@ -87,7 +93,7 @@ func (a *Api) CreateToken(c echo.Context) error {
 	t, err := CreateToken(a.Config, u)
 	if err != nil {
 		log.Error("Failed to create a token ", err)
-		return c.JSON(http.StatusInternalServerError, "Can't create a token")
+		return c.JSON(http.StatusInternalServerError, "Can't create a token. Please try again later.")
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
