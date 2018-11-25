@@ -17,7 +17,7 @@ type Store struct {
 
 func New(c *config.Configuration) *Store {
 
-	db, err := bbolt.Open("piggymetrics.db", 0600, &bbolt.Options{Timeout: 1 * time.Second})
+	db, err := bbolt.Open("app/db/piggymetrics.db", 0600, &bbolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
 	}

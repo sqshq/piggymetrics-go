@@ -6,5 +6,5 @@ Light and simple version of the [PiggyMetrics](https://github.com/sqshq/PiggyMet
 
 ``` bash
 docker build -t sqshq/piggymetrics .
-docker run -p 8080:8080  --rm sqshq/piggymetrics
+docker run -p 8080:8080 --name=piggymetrics -v ~/piggymetrics/db:/app/db --rm sqshq/piggymetrics
 ```
