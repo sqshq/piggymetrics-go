@@ -6,5 +6,5 @@ RUN cd /go/src/github.com/sqshq/piggymetrics-go/app && go build -o piggymetrics
 # final stage
 FROM alpine:3.8
 COPY --from=build-env /go/src/github.com/sqshq/piggymetrics-go/app/ /app/
-EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ./app/piggymetrics
